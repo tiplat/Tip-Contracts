@@ -40,7 +40,7 @@ contract TIPSocial {
         bool exists;
     }
 
-    // Mappings
+    // ── Social mappings ──────────────────────────────────────────────────────
     mapping(address => User) public users;
     mapping(string => address) public usernameToAddress;
     mapping(uint256 => Post) public posts;
@@ -54,7 +54,11 @@ contract TIPSocial {
     uint32 public postCount;
     uint32 public commentCount;
 
-    // Events
+    // ── Stories mappings ─────────────────────────────────────────────────────
+    mapping(address => uint256) public storyCount;
+    mapping(address => mapping(string => uint256)) public reactionCount;
+
+    // ── Social events ────────────────────────────────────────────────────────
     event UserCreated(address indexed user, string username);
     event UserUpdated(
         address indexed user,
@@ -92,7 +96,21 @@ contract TIPSocial {
         string message
     );
 
-    // Modifiers
+    // ── Stories events ───────────────────────────────────────────────────────
+    event StoryPosted(
+        address indexed user,
+        string  cid,
+        uint256 createdAt
+    );
+    event StoryReaction(
+        address indexed reactor,
+        address indexed storyAuthor,
+        string  cid,
+        string  emoji,
+        uint256 createdAt
+    );
+
+    // ── Modifiers ────────────────────────────────────────────────────────────
     modifier userExists(address _user) {
         require(users[_user].exists, "User not found");
         _;
@@ -103,7 +121,7 @@ contract TIPSocial {
         _;
     }
 
-    // User functions
+    // ── User functions ───────────────────────────────────────────────────────
     function createUser(
         string memory _username,
         string memory _avatar
@@ -274,7 +292,7 @@ contract TIPSocial {
         return usernameToAddress[_username];
     }
 
-    // Post functions
+    // ── Post functions ───────────────────────────────────────────────────────
     function createPost(
         string memory _content,
         string memory _imageUrl
@@ -379,7 +397,7 @@ contract TIPSocial {
         emit PostUnreposted(_postId, msg.sender);
     }
 
-    // FIXED: Tip functions - now properly handle msg.value like messaging contract
+    // ── Tip functions ────────────────────────────────────────────────────────
     function tipUser(
         address _to,
         uint256 _amount,
@@ -387,15 +405,13 @@ contract TIPSocial {
     ) external payable userExists(msg.sender) userExists(_to) {
         require(_to != msg.sender, "Self tip");
         require(msg.value > 0, "Tip amount must be greater than 0");
-        // FIXED: Use msg.value instead of _amount parameter for actual transfer
         require(msg.value == _amount, "Amount mismatch");
 
         users[msg.sender].totalTipsSent += msg.value;
         users[_to].totalTipsReceived += msg.value;
 
-        // FIXED: Transfer the actual msg.value amount
         (bool success, ) = payable(_to).call{value: msg.value}("");
-require(success, "Transfer failed");
+        require(success, "Transfer failed");
         emit TipSent(0, msg.sender, _to, msg.value, 0, _message);
     }
 
@@ -406,7 +422,6 @@ require(success, "Transfer failed");
     ) external payable userExists(msg.sender) postExists(_postId) {
         require(posts[_postId].author != msg.sender, "Own post");
         require(msg.value > 0, "Tip amount must be greater than 0");
-        // FIXED: Use msg.value instead of _amount parameter for actual transfer
         require(msg.value == _amount, "Amount mismatch");
 
         address postAuthor = posts[_postId].author;
@@ -415,13 +430,12 @@ require(success, "Transfer failed");
         posts[_postId].tipAmount += msg.value;
         posts[_postId].tipCount++;
 
-        // FIXED: Transfer the actual msg.value amount
         (bool success, ) = payable(postAuthor).call{value: msg.value}("");
-require(success, "Transfer failed");
+        require(success, "Transfer failed");
         emit TipSent(0, msg.sender, postAuthor, msg.value, _postId, _message);
     }
 
-    // Follow functions
+    // ── Follow functions ─────────────────────────────────────────────────────
     function followUser(
         address _user
     ) external userExists(msg.sender) userExists(_user) {
@@ -445,7 +459,27 @@ require(success, "Transfer failed");
         emit UserUnfollowed(msg.sender, _user);
     }
 
-    // View functions
+    // ── Stories functions ────────────────────────────────────────────────────
+    /// @notice Post a story — requires a registered profile.
+    function postStory(string calldata cid) external userExists(msg.sender) {
+        require(bytes(cid).length > 0, "CID required");
+        storyCount[msg.sender]++;
+        emit StoryPosted(msg.sender, cid, block.timestamp);
+    }
+
+    /// @notice React to a story with an emoji — requires a registered profile.
+    function reactToStory(
+        address storyAuthor,
+        string calldata cid,
+        string calldata emoji
+    ) external userExists(msg.sender) {
+        require(bytes(cid).length > 0,   "CID required");
+        require(bytes(emoji).length > 0, "Emoji required");
+        reactionCount[storyAuthor][cid]++;
+        emit StoryReaction(msg.sender, storyAuthor, cid, emoji, block.timestamp);
+    }
+
+    // ── View functions ───────────────────────────────────────────────────────
     function getUserPosts(
         address _user
     ) external view returns (uint256[] memory) {
@@ -458,23 +492,22 @@ require(success, "Transfer failed");
         return postComments[_postId];
     }
 
-    // Fixed: Removed unused parameters and changed to pure functions
     function getUserTipsReceived(
         address /* _user */
     ) external pure returns (uint256[] memory) {
-        return new uint256[](0); // Simplified for size
+        return new uint256[](0);
     }
 
     function getUserTipsSent(
         address /* _user */
     ) external pure returns (uint256[] memory) {
-        return new uint256[](0); // Simplified for size
+        return new uint256[](0);
     }
 
     function getPostTips(
         uint256 /* _postId */
     ) external pure returns (uint256[] memory) {
-        return new uint256[](0); // Simplified for size
+        return new uint256[](0);
     }
 
     function isFollowing(
