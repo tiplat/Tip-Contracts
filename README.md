@@ -7,6 +7,7 @@ Official smart contract addresses for the platform deployed on the Base network.
 | Contract | Address |
 |---|---|
 | TIPSocial | `0xfe758Dc0232D2778ED685164742887c7f1582Acf` |
+| IdentitySBT | `0x344c7A0376c2e2863E63ed26c33AD537687a3766` |
 | Messenger | `0xf38be4E141fAd9439B71290304cC6b24dd8f07e2` |
 | Marketplace | `0xF043dc37c98b95Cb6d85eB68D2D7b47387403248` |
 | NFTFactory | `0xEdc112C873BF31b0b74dCE2EF5D5B3e934D0780b` |
