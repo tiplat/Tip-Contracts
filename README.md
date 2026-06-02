@@ -15,6 +15,7 @@ Official smart contract addresses for the platform deployed on the Base network.
 | NFTSwap | `0x3E86406113Eb510331B845d1a18406d8E5e7522A` |
 | Forms | `0x18eF493FB2Fc452a9dE4851753278AB663c86C70` |
 | Gate | `0x98CAa8eD130C74701894a2Dc4dD00e7a786B37eb` |
+| TIPApiKeys | `0x58A1fa23fD6E2332415eA5a40f80869e4FCAb5C1` |
 
 ## Network
 
