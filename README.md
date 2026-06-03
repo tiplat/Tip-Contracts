@@ -16,6 +16,7 @@ Official smart contract addresses for the platform deployed on the Base network.
 | Forms | `0x18eF493FB2Fc452a9dE4851753278AB663c86C70` |
 | Gate | `0x98CAa8eD130C74701894a2Dc4dD00e7a786B37eb` |
 | TIPApiKeys | `0x58A1fa23fD6E2332415eA5a40f80869e4FCAb5C1` |
+| TIPAgentRegistry | `0x2ba4335184F11d8C76a2311dD79cfB6193ec48f6` |
 
 ## Network
 
